@@ -1,0 +1,15 @@
+name: venv
+channels:
+  - conda-forge
+dependencies:
+  - pandas=1.4.4
+  - numpy=1.21.5
+  - umap-learn=0.5.3
+  - hdbscan=0.8.28
+  - sentence-transformers=2.2.2
+  - matplotlib=3.6.0
+  - scipy=1.7.3
+  - pyLDAvis=3.3.1
+  - gensim=4.2.0
+  - wordcloud=1.8.2.2
+  - spacy=3.4.1

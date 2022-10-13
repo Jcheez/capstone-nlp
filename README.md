@@ -1,0 +1,3 @@
+Installing Conda
+
+Installing pip
