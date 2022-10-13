@@ -38,24 +38,32 @@ def create_wordcloud(long_string):
 
 app.layout = html.Div(children=[
     html.H1(children='Topic Modeling Summary'),
-    
     html.Div(children='''
         A breakdown of different topic categories
     '''),
-
+    html.Br(),
+    html.H2("Topic Models", style={"textAlign":"center"}),
     dcc.Graph(
         id='example-graph',
         figure=go.Figure(
             data=[go.Pie(
-                    # labels=df['Words'],
+                    labels=df['Words'],
                     values=df['Size'],
                     customdata=df['Topic'],
                     marker_colors=px.colors.qualitative.Pastel,
                     hovertemplate="Relevant terms:<br><b>%{label}</b> <br>Count: %{value}<extra></extra>",
                     sort=False)  # to disable sorting for better understanding of chart
-            ]),
+            ],
+            layout={
+                "height":550
+            }).update_layout(legend={
+                        "yanchor": "bottom",
+                        "y": -0.25,
+                        "xanchor": "left",
+                        "x": 0.05
+                    }, margin=dict(t=0, b=0, l=0, r=0), font=dict(size=18)),
         style={
-            "paddingTop":"28px"
+            "overflowX": "hidden",
         }
     ),
 
