@@ -13,7 +13,7 @@ import dash_table
 # from src.topicModelling.topic_modeling import top_n_words
 
 
-basePath = "./assets/inputs/"
+basePath = "./assets/outputs/"
 abs_name = "sensitised_IG_RnR_training_dataset" 
 
 # top_n_words(abs_name)
