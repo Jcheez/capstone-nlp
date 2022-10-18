@@ -1,4 +1,3 @@
-# Time series + DA for Social Media data
 from dash import Dash, dcc, html, Input, Output
 from os import path
 from src.sentimentAnalysis.backend import run, run_absa
@@ -14,6 +13,16 @@ if not path.isfile(f"{output_path}/{file_name}_result.csv"):
 
 df = pd.read_csv(f"{output_path}/{file_name}_result.csv")
 absa_df = pd.read_csv(f"{output_path}/{file_name}_absa.csv")
+
+
+COLOR_MAPPING = {
+    'joy': 'Yellow',
+    'sadness': 'Blue',
+    'fear': 'Purple',
+    'anger': 'Red',
+    'surprise': 'Brown',
+    'love': 'Pink'
+}
 
 app = Dash(__name__)
 
@@ -35,6 +44,18 @@ app.layout = html.Div([
                 options= [{'label' : l, 'value' : l} for l in absa_df['aspect_f'].dropna().unique()],
                 value=[],
                 multi=True
+            ),
+            html.P("Sort by Emotion:", className="control_label"),   
+            dcc.Dropdown(
+                id="sort-emotion-dropdown",
+                options= [{'label' : l, 'value' : l} for l in df['emotion'].unique()],
+                value=None,
+            ),
+            html.P("Sort Direction:", className="control_label"),   
+            dcc.RadioItems(
+                id="sort-direction-radio",
+                options= [{'label' : 'Ascending', 'value' : 'total ascending'}, {'label' : 'Descending', 'value' : 'total descending'}],
+                value='total ascending',
             ),
         ], className="left-col"),
         html.Div([
@@ -85,13 +106,17 @@ app.layout = html.Div([
 # Callback for Emotion Bar plot
 @app.callback(
     Output("sentimentBar", "figure"),
-    Input("topic-label-dropdown", "value")
+    Input("topic-label-dropdown", "value"),
+    Input("sort-emotion-dropdown", "value"),
+    Input('sort-direction-radio', "value")
 )
 
-def update_bar_plot(filter):
+def update_bar_plot(filter, sortby, direction):
     dataset = df
     if len(filter) > 0:
         dataset = dataset[dataset['label'].isin(filter)]
+    if sortby is not None:
+        dataset = dataset[dataset['emotion'] == sortby]
     fig = px.histogram(
         dataset, 
         x='label', 
@@ -100,8 +125,9 @@ def update_bar_plot(filter):
         barmode="group", 
         histfunc="count", 
         title="Emotion classification by Label",
-        labels= {'label': 'Topic Labels', 'emotion': 'Emotions'}
-    ).update_layout(title_x=0.5)
+        labels= {'label': 'Topic Labels', 'emotion': 'Emotions'},
+        color_discrete_map=COLOR_MAPPING
+    ).update_layout(title_x=0.5).update_xaxes(categoryorder=direction)
     return fig
 
 
@@ -109,7 +135,7 @@ def update_bar_plot(filter):
 @app.callback(
     Output("absaBar", "figure"),
     Input("topic-label-dropdown", "value"),
-    Input("aspect-label-dropdown", "value")
+    Input("aspect-label-dropdown", "value"),
 )
 
 def update_absabar_plot(filter, aspect):
@@ -147,8 +173,10 @@ def update_pie_chart(filter):
         dataset, 
         values="score", 
         names='emot',
-        title="Proportion of Emotion Classification by Label"
-    ).update_layout(title_x=0.5, legend_title='Emotions')
+        color='emot',
+        title="Proportion of Emotion Classification by Label",
+        color_discrete_map=COLOR_MAPPING
+    ).update_layout(title_x=0.5, legend_title="Emotions")
     return fig
 
 
