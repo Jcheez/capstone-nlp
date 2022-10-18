@@ -8,7 +8,6 @@ from wordcloud import WordCloud
 import plotly.graph_objs as go
 from io import BytesIO
 import base64
-# from src.topicModelling.topic_modeling import top_n_words
 import dash
 from src.topicModelling.topic_modeling import create_topics
 import os.path
@@ -104,6 +103,4 @@ def topic_model(filepath):
         plot_wordcloud(df_cloud.iloc[0]["Doc"]).save(img, format='PNG')
         return 'data:image/png;base64,{}'.format(base64.b64encode(img.getvalue()).decode())
 
-
-    if __name__ == '__main__':
-        app.run_server(debug=True)
+    app.run_server()

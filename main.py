@@ -4,7 +4,7 @@ from tkinter import filedialog as fd
 from tkinter import ttk
 from tkinter.messagebox import showinfo
 import os
-from topicModelling import topic_model
+import time
 
 filechosen = [0]
 application = [0]
@@ -50,7 +50,9 @@ class App(tk.Tk):
 
 
     def close_app(self):
+        self.withdraw()
         self.destroy()
+
 
     def select_file(self):
         filetypes = (
@@ -105,7 +107,7 @@ class App(tk.Tk):
 if __name__ == "__main__":
     app = App()
     app.mainloop()
-
+    
     if (filechosen[0] == 0 or application[0] == 0):
         print("No file or application chosen, application will now terminate")
         exit()
@@ -121,6 +123,7 @@ if __name__ == "__main__":
     print(f"{application[0]} for file {os.path.basename(filechosen[0])} will now be run")
     
     if (application[0] == "Topic Modeling"):
+        from topicModelling import topic_model
         topic_model(filechosen[0])
     # elif (application[0] == "Text Summarization"):
     #     run_summary
