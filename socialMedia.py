@@ -34,66 +34,78 @@ def create_social(filename):
     def process_timeseries_df(df):
         df['time'] = pd.to_datetime(df['time'])
         return df
-    print(df.info())
     content_type = 'Posts' if df.iloc[0]['content_type'] == 'Posts' else 'Comments'
 
     df = process_timeseries_df(df)
 
     app.layout = html.Div([
         html.H1("Social Media Analysis", style={"textAlign": "center"}),
-        html.P(f"File: {filename}",
-            style={"textAlign": "center"}),
-
+        html.P(f"File: {filename}", style={"textAlign": "center"}),
+        html.P(f'Content Type: {content_type}', style={"textAlign": "center"}),
         html.Div([
-            dcc.Markdown(f'Content Type: {content_type}')]),
-
-        html.Div([
-            dcc.Markdown('Topic Label(s)'),
-            dcc.Dropdown(
-                id="Topic Label",
-                options=[{'label': l, 'value': l}
-                        for l in df['label'].unique()],
-                value=[],
-                multi=True
-            )], style={'width': '15%', 'paddingLeft': 30, 'display': 'inline-block'}),
-
-        html.Div([dcc.Markdown('Aggregation Period'),
+            html.Div([
+                html.P("Topic Labels", className="control_label"),
                 dcc.Dropdown(
-            id='Aggregation Period',
-            options=[{'label': 'Yearly', 'value': 'Yearly'}, {'label': 'Monthly', 'value': 'Monthly'},
-                    {'label': 'Daily', 'value': 'Daily'}],
-            value='Monthly'
-        )], style={'width': '15%', 'paddingLeft': 30, 'display': 'inline-block'}),
-
-        html.Div([
-            dcc.Markdown('Reaction Type *(only for Social Media Posts)*'),
-            dcc.Dropdown(
-                id='Reaction Type',
-                options=[{'label': 'None', 'value': 'None'}, {
-                    'label': 'Likes', 'value': 'Likes'}, {'label': 'Comments', 'value': 'Comments'}],
-                value='None'
-            )], style={'width': '20%', 'paddingLeft': 30, 'display': 'inline-block'}),
-
-        html.Div([
-            dcc.Markdown('Date Range'),
-            dcc.DatePickerRange(
-                id="Date Range",
-                start_date=df["time"].min(),
-                end_date=df["time"].max(),
-                min_date_allowed=df["time"].min(),
-                max_date_allowed=df["time"].max(),
-                initial_visible_month=df["time"].min()
-            )], style={'width': '20%', 'paddingLeft': 30, 'display': 'inline-block'}),
-
-        html.Div([html.Br()]),
-
-        html.Div([
-            daq.BooleanSwitch(id='Proportion', on=False, label="Create Proportion",
-                            labelPosition="top")
-        ]),
-
-        html.Div([html.Br()]),
-
+                    id="Topic Label",
+                    options=[{'label': l, 'value': l} for l in df['label'].unique()],
+                    value=[],
+                    multi=True
+                ),
+                html.P("Aggregation Period", className="control_label"),
+                dcc.Dropdown(
+                    id='Aggregation Period',
+                    options=[{'label': 'Yearly', 'value': 'Yearly'}, {'label': 'Monthly', 'value': 'Monthly'},
+                            {'label': 'Daily', 'value': 'Daily'}],
+                    value='Monthly'
+                ),
+                html.P("Reaction Type *(only for Social Media Posts)*", className="control_label"),
+                dcc.Dropdown(
+                    id='Reaction Type',
+                    options=[{'label': 'None', 'value': 'None'}, {
+                        'label': 'Likes', 'value': 'Likes'}, {'label': 'Comments', 'value': 'Comments'}],
+                    value='None'
+                ),
+                html.P("Date Range", className="control_label"),
+                dcc.DatePickerRange(
+                    id="Date Range",
+                    start_date=df["time"].min(),
+                    end_date=df["time"].max(),
+                    min_date_allowed=df["time"].min(),
+                    max_date_allowed=df["time"].max(),
+                    initial_visible_month=df["time"].min(), 
+                ),
+                daq.BooleanSwitch(id='Proportion', on=False, label="Create Proportion", labelPosition="top") # To remove
+            ], className="left-col"),
+            # html.Div([
+            #     html.Div([
+            #         html.Div([
+            #             html.P(id='numObservations', style={'fontSize': '48px', 'margin': 0}),
+            #             html.P(
+            #                 "Observations", style={'fontSize': '12px', 'margin': 0}
+            #             )
+            #         ], className="mini_container"),
+            #         html.Div([
+            #             html.P(id='numLabels', style={'fontSize': '48px', 'margin': 0}),
+            #             html.P(
+            #                 "Topic Labels", style={'fontSize': '12px', 'margin': 0}
+            #             )
+            #         ], className="mini_container"),
+            #         html.Div([
+            #             html.P(id='numAspectLabels', style={'fontSize': '48px', 'margin': 0}),
+            #             html.P(
+            #                 "Aspect Labels", style={'fontSize': '12px', 'margin': 0}
+            #             )
+            #         ], className="mini_container"),
+            #         html.Div([
+            #             html.P(id='numAspectObservations', style={'fontSize': '48px', 'margin': 0}),
+            #             html.P(
+            #                 "Aspect Observations", style={'fontSize': '12px', 'margin': 0}
+            #             )
+            #         ], className="mini_container")
+            #     ], style={"display": "flex", "flex-direction": "row"}),
+            #     html.Div(dcc.Graph(id="sentimentBar"), className="plots")
+            # ], className="right-col")
+        ], style={"display": "flex", "flex-direction": "row"}),
         dcc.Loading(
             dcc.Graph(id='time_series')),
     ])
@@ -174,7 +186,7 @@ def create_social(filename):
         return fig
 
 
-    app.run_server()
+    app.run_server(debug=True)
 
 
 create_social("./assets/inputs/standardized_covid_dataset_labelled.xlsx")

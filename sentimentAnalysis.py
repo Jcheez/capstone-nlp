@@ -6,12 +6,12 @@ import plotly.express as px
 import os
 
 def create_sentiment(filepath):
-    output_path = "./assets/outputs"
+    output_path = "./assets/outputs/sentiment_analysis"
     file_name = os.path.basename(filepath).split(".")[0]
 
     if not path.isfile(f"{output_path}/{file_name}_result.csv"):
-        run()
-        run_absa()
+        run(file_name)
+        run_absa(file_name)
 
     df = pd.read_csv(f"{output_path}/{file_name}_result.csv")
     absa_df = pd.read_csv(f"{output_path}/{file_name}_absa.csv")

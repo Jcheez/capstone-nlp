@@ -36,7 +36,8 @@ def clean(text):
   tokenised = list(map(lambda x: x if x not in emoticons_dict else emoticons_dict[x], tokenised)) # replace emoticon with text
   tokenised = list(filter(lambda x: not (bool(re.match("\B\#\S+ |\B\#\S+", x) or bool(re.match("[a-zA-Z0-9-_.]+@[a-zA-Z0-9-_.]+", x)) or bool(re.match("(?:https?|ftp):\/\/[\w\/\-?=%.]+\.[\w\/\-&?=%.]+", x)) or bool(re.match("(?:https ?|ftp):\/\/[\w\/\-?=%.]+\.[\w\/\-&?=%.]+", x)))), tokenised)) # remove hashtags
   tokenised = list(filter(lambda x: x.isalpha(), tokenizer.tokenize(" ".join(tokenised)))) # keep only alphabets
-  tokenised = list(filter(lambda x: x not in stop, tokenised))
+  lemmatized = [lemmatizer.lemmatize(token) for token in tokenizer.tokenize(" ".join(tokenised))] # lemmatized
+  tokenised = list(filter(lambda x: x not in stop, lemmatized))
 
   cleaned = list(map(lambda x: x if x not in nonenglish_dict else nonenglish_dict[x], tokenised))
   return " ".join(cleaned)
