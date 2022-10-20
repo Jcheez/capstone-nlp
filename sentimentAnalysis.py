@@ -149,12 +149,13 @@ def create_sentiment(filepath):
         fig = px.histogram(
             dataset, 
             x='aspect_f', 
-            y='sentiment_f', 
-            color='sentiment_f', 
+            y='emotion', 
+            color='emotion', 
             barmode="group", 
             histfunc="count",
             title="Aspect Based Emotional Classification",
-            labels= {'aspect_f': 'Aspect Labels', 'sentiment_f': 'Sentiments'}
+            labels= {'aspect_f': 'Aspect Labels', 'emotion': 'Emotions'},
+            color_discrete_map=COLOR_MAPPING
         ).update_layout(title_x=0.5)
         return fig
 
