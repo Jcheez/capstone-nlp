@@ -115,10 +115,13 @@ if __name__ == "__main__":
     if (application[0] == "Text Summarization"):
         if (".txt" not in filechosen[0]):
             print("Bad file type chosen for Text Summarization, please select a text file with .txt extension")
+            exit()
     
     if (application[0] != "Text Summarization"):
         if (".xlsx" not in filechosen[0]):
             print(f"Bad file type chosen for {application[0]}, please select an Excel file with extension .xlsx")
+            exit()
+
     
     print(f"{application[0]} for file {os.path.basename(filechosen[0])} will now be run")
 
