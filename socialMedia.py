@@ -58,7 +58,7 @@ def create_social(filename):
                             {'label': 'Daily', 'value': 'Daily'}],
                     value='Monthly'
                 ),
-                html.P("Reaction Type *(only for Social Media Posts)*", className="control_label"),
+                html.P("Reaction Type *(only for Content Type: Posts)*", className="control_label"),
                 dcc.Dropdown(
                     id='Reaction Type',
                     options=[{'label': 'None', 'value': 'None'}, {
@@ -74,40 +74,12 @@ def create_social(filename):
                     max_date_allowed=df["time"].max(),
                     initial_visible_month=df["time"].min(), 
                 ),
-                daq.BooleanSwitch(id='Proportion', on=False, label="Create Proportion", labelPosition="top") # To remove
             ], className="left-col"),
-            # html.Div([
-            #     html.Div([
-            #         html.Div([
-            #             html.P(id='numObservations', style={'fontSize': '48px', 'margin': 0}),
-            #             html.P(
-            #                 "Observations", style={'fontSize': '12px', 'margin': 0}
-            #             )
-            #         ], className="mini_container"),
-            #         html.Div([
-            #             html.P(id='numLabels', style={'fontSize': '48px', 'margin': 0}),
-            #             html.P(
-            #                 "Topic Labels", style={'fontSize': '12px', 'margin': 0}
-            #             )
-            #         ], className="mini_container"),
-            #         html.Div([
-            #             html.P(id='numAspectLabels', style={'fontSize': '48px', 'margin': 0}),
-            #             html.P(
-            #                 "Aspect Labels", style={'fontSize': '12px', 'margin': 0}
-            #             )
-            #         ], className="mini_container"),
-            #         html.Div([
-            #             html.P(id='numAspectObservations', style={'fontSize': '48px', 'margin': 0}),
-            #             html.P(
-            #                 "Aspect Observations", style={'fontSize': '12px', 'margin': 0}
-            #             )
-            #         ], className="mini_container")
-            #     ], style={"display": "flex", "flex-direction": "row"}),
-            #     html.Div(dcc.Graph(id="sentimentBar"), className="plots")
-            # ], className="right-col")
+            html.Div([
+            dcc.Loading(dcc.Graph(id='time_series'))
+            ], className="right-col")
         ], style={"display": "flex", "flex-direction": "row"}),
-        dcc.Loading(
-            dcc.Graph(id='time_series')),
+        dcc.Loading(dcc.Graph(id='proportion_graph'))
     ])
 
 
@@ -118,10 +90,9 @@ def create_social(filename):
         Input('Reaction Type', 'value'),
         Input('Date Range', 'start_date'),
         Input('Date Range', 'end_date'),
-        Input('Proportion', 'on')
         ]
     )
-    def update_time_series_plot(topic_label, time_frame, reaction_type, start_date, end_date, proportion):
+    def update_time_series_plot(topic_label, time_frame, reaction_type, start_date, end_date):
 
         timeSeries = df
 
@@ -148,30 +119,14 @@ def create_social(filename):
         fig = px.area(graphPlot, x='trunc_time', y='Frequency', color='label',
                     labels={"trunc_time": "Date"}, title=f"Frequency of {content_type} over time")
 
-        # Create proportion
-        if (proportion == True):
-            proportion_df = timeSeries[['label', 'trunc_time']
-                                    ].value_counts().reset_index(name='count')
-            # height = 1000 if len(topic_label) >= 4 or time_frame != 'Yearly' else 500
-            proportion_df['Proportion'] = proportion_df['count'] / \
-                proportion_df.groupby('trunc_time')['count'].transform('sum')
-            fig = px.bar(proportion_df, y='Proportion', x='trunc_time', text='label', color='label',
-                        title="Proportion of Topic Label over time")
-
         if (reaction_type != 'None' and content_type == 'Posts'):
             reaction_type_column = reaction_type.lower()
             count_reaction = timeSeries.groupby(['label', 'trunc_time'])[
                 reaction_type_column].agg('sum').reset_index(name='Count')
 
-            if (proportion == True):
-                proportion_df = count_reaction
-                proportion_df['Proportion'] = proportion_df['Count'] / \
-                    proportion_df.groupby('trunc_time')['Count'].transform('sum')
-                fig = px.bar(proportion_df, y='Proportion', x='trunc_time', text='label', color='label', labels={"trunc_time": "Date"},
-                            title=f"Proportion of {reaction_type} for each Topic Label over time")
-            else:
-                fig = px.area(count_reaction, x='trunc_time', y='Count', color='label',
+            fig = px.area(count_reaction, x='trunc_time', y='Count', color='label',
                             labels={"trunc_time": "Date"}, title=f"Count of {reaction_type} over time")
+
 
         # Set yearly intervals
         if time_frame == 'Yearly':
@@ -182,7 +137,75 @@ def create_social(filename):
                 )
             )
 
-        fig.update_layout(xaxis_title='Time', height=600)
+        fig.update_layout(xaxis_title='Time', height=600, title_x=0.3)
+        return fig
+
+
+    @app.callback(
+        Output('proportion_graph', 'figure'),
+        [Input('Topic Label', 'value'),
+        Input('Aggregation Period', 'value'),
+        Input('Reaction Type', 'value'),
+        Input('Date Range', 'start_date'),
+        Input('Date Range', 'end_date'),
+        ]
+    )
+    def update_proportion_plot(topic_label, time_frame, reaction_type, start_date, end_date):
+
+        timeSeries = df
+
+        timeSeries = timeSeries.loc[timeSeries['time'].between(
+            pd.to_datetime(start_date), pd.to_datetime(end_date))]
+
+        # Filter by selected topic label(s)
+        if (topic_label != []):
+            timeSeries = timeSeries[timeSeries.label.isin(topic_label)]
+
+        # Aggregate by chosen timeframe
+        if time_frame == 'Yearly':
+            timeSeries['trunc_time'] = timeSeries['time'].apply(lambda x: x.year)
+        elif time_frame == 'Monthly':
+            timeSeries['trunc_time'] = timeSeries['time'].apply(
+                lambda x: Timestamp(x.year, x.month, 1))
+        elif time_frame == 'Daily':
+            timeSeries['trunc_time'] = timeSeries['time'].apply(
+                lambda x: Timestamp(x.year, x.month, x.day))
+
+        graphPlot = timeSeries[['label', 'trunc_time']].groupby(
+            ['trunc_time', 'label']).size().reset_index().rename(columns={0: 'Frequency'})
+
+        fig = px.area(graphPlot, x='trunc_time', y='Frequency', color='label',
+                    labels={"trunc_time": "Date"}, title=f"Frequency of {content_type} over time")
+
+        proportion_df = timeSeries[['label', 'trunc_time']
+                                ].value_counts().reset_index(name='count')
+        proportion_df['Proportion'] = proportion_df['count'] / \
+            proportion_df.groupby('trunc_time')['count'].transform('sum')
+        fig = px.bar(proportion_df, y='Proportion', x='trunc_time', text='label', color='label',
+                    title="Proportion of Topic Label over time")
+
+        if (reaction_type != 'None' and content_type == 'Posts'):
+            reaction_type_column = reaction_type.lower()
+            count_reaction = timeSeries.groupby(['label', 'trunc_time'])[
+                reaction_type_column].agg('sum').reset_index(name='Count')
+
+            proportion_df = count_reaction
+            proportion_df['Proportion'] = proportion_df['Count'] / \
+                proportion_df.groupby('trunc_time')['Count'].transform('sum')
+            fig = px.bar(proportion_df, y='Proportion', x='trunc_time', text='label', color='label', labels={"trunc_time": "Date"},
+                        title=f"Proportion of {reaction_type} for each Topic Label over time")
+
+
+        # Set yearly intervals
+        if time_frame == 'Yearly':
+            fig.update_layout(
+                xaxis=dict(
+                    tickmode='linear',
+                    dtick=1
+                )
+            )
+
+        fig.update_layout(xaxis_title='Time', height=1000, title_x=0.5)
         return fig
 
 
