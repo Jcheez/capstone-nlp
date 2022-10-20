@@ -1,22 +1,7 @@
-# import glob, os
+import os
 import gensim
 from gensim.summarization import summarize
 from transformers import BartForConditionalGeneration, BartTokenizer
-
-################# FILE PATH SET UP #################
-input_dir = R"C:\Users\limji\OneDrive - National University of Singapore\Y4S1\BT4103"
-input_file = "TextData.txt"
-output_dir = R"C:\Users\limji\OneDrive - National University of Singapore\Y4S1\BT4103\Summary"
-input_path = input_dir + "\\" + input_file
-output_path = output_dir + "\\" + input_file[:-4] + " Output" + input_file[-4:]
-
-################# SUMMARIZATIN TOOL #################
-with open(input_path, encoding="utf8") as f:
-    contents = f.read()
-    f.close()
-
-bart_tokenizer=BartTokenizer.from_pretrained('facebook/bart-large-cnn')
-bart_model=BartForConditionalGeneration.from_pretrained('facebook/bart-large-cnn')
 
 def combine_string(sentences_list):
 	combined = ""
@@ -58,16 +43,22 @@ def summarize_chunks(original_text, tokenizer, my_model):
 		summary += " "
 	return summary
 
+def run_summary(filepath):
+	with open(filepath, encoding="utf8") as f:
+		contents = f.read()
+		f.close()
 
-def summarise(raw_text):
-	text = raw_text.strip().replace("\n","")
+	bart_tokenizer=BartTokenizer.from_pretrained('facebook/bart-large-cnn')
+	bart_model=BartForConditionalGeneration.from_pretrained('facebook/bart-large-cnn')
+
+	text = contents.strip().replace("\n","")
 	extractive_summary = gensim.summarization.summarize(text, ratio=0.5)
-	return summarize_chunks(extractive_summary, bart_tokenizer, bart_model)
+	summary = summarize_chunks(extractive_summary, bart_tokenizer, bart_model)
 
+	basePath = "./assets/outputs/summarization/"
+	basename = os.path.basename(filepath).split(".")[0]
+	output_path = f"{basePath}{basename}_output.txt"
 
-summary = summarise(contents)
-print(summary)
-
-with open(output_path,'w', encoding="utf8") as new_f:
-    new_f.write(summary)
-    new_f.close()
+	with open(output_path,'w', encoding="utf8") as output_f:
+		output_f.write(summary)
+		output_f.close()

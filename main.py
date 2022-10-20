@@ -134,11 +134,10 @@ if __name__ == "__main__":
     elif (application[0] == "Social Media"):
         from socialMedia import create_social
         create_social(filechosen[0])
-    # elif (application[0] == "Text Summarization"):
-    #     run_summary
-    elif (application[0] == "Social Media"):
-        from socialMedia import create_social
-        create_social(filechosen[0])
+    elif (application[0] == "Text Summarization"):
+        from summarizationTool import run_summary
+        run_summary(filechosen[0])
+
     
 
 
