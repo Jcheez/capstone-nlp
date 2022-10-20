@@ -131,10 +131,12 @@ if __name__ == "__main__":
     elif (application[0] == "Sentiment Analysis"):
         from sentimentAnalysis import create_sentiment
         create_sentiment(filechosen[0])
+    elif (application[0] == "Social Media"):
+        from socialMedia import create_social
+        create_social(filechosen[0])
     # elif (application[0] == "Text Summarization"):
     #     run_summary
-    # elif (application[0] == "Social Media"):
-    #     run_social
+    
     
 
 
