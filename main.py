@@ -125,12 +125,14 @@ if __name__ == "__main__":
     if (application[0] == "Topic Modeling"):
         from topicModelling import topic_model
         topic_model(filechosen[0])
+    elif (application[0] == "Sentiment Analysis"):
+        from sentimentAnalysis import create_sentiment
+        create_sentiment(filechosen[0])
     # elif (application[0] == "Text Summarization"):
     #     run_summary
     # elif (application[0] == "Social Media"):
     #     run_social
-    # elif (application[0] == "Sentiment Analysis"):
-    #     run_senti
+    
 
 
 
