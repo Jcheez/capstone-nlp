@@ -121,7 +121,7 @@ if __name__ == "__main__":
             print(f"Bad file type chosen for {application[0]}, please select an Excel file with extension .xlsx")
     
     print(f"{application[0]} for file {os.path.basename(filechosen[0])} will now be run")
-    
+
     if (application[0] == "Topic Modeling"):
         from topicModelling import topic_model
         topic_model(filechosen[0])

@@ -34,7 +34,10 @@ def create_topics(filepath):
     print("Processing Topics")
     model = SentenceTransformer("roberta-base-nli-stsb-mean-tokens")
 
+    print("Embedding Topics")
     embeddings = model.encode(text_df_list_final, show_progress_bar=True)
+
+    print("Clustering Topics, this step may take a longer time for large datasets")
 
     umap_embeddings = umap.UMAP(
         n_neighbors=15, n_components=5, metric='cosine').fit_transform(embeddings)
