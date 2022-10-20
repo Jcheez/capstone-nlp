@@ -33,20 +33,18 @@ def run(file_name):
 
 
 def run_absa(file_name):
-    df = pd.read_excel(f"{input_path}/{file_name}.xlsx")
+    df = pd.read_csv(f"{output_path}/{file_name}_result.csv")
     df['processed_text'] = df['text'].apply(lambda x: clean(x))
     extractor = ATEPCCheckpointManager.get_aspect_extractor(checkpoint='english')
     res = extractor.extract_aspect(inference_source=df['processed_text'].tolist(), pred_sentiment=True,save_result=False, print_result=False)
 
     df['aspects'] = list(map(lambda x: x['aspect'], res))
-    df['sentiments'] = list(map(lambda x: x['sentiment'], res))
     
     out = []
     for _, row in df.iterrows():
         if len(row['aspects']):
             for item in range(len(row['aspects'])):
                 row['aspect_f'] = row['aspects'][item]
-                row['sentiment_f'] = row['sentiments'][item]
                 out += [row.copy()]
         else:
             out += [row.copy()]
