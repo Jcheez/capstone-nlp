@@ -1,6 +1,7 @@
 import os
 import gensim
-from gensim.summarization import summarize
+# from gensim.summarization import summarize
+from summarizer import Summarizer
 from transformers import BartForConditionalGeneration, BartTokenizer
 
 def combine_string(sentences_list):
@@ -52,7 +53,9 @@ def run_summary(filepath):
 	bart_model=BartForConditionalGeneration.from_pretrained('facebook/bart-large-cnn')
 
 	text = contents.strip().replace("\n","")
-	extractive_summary = gensim.summarization.summarize(text, ratio=0.5)
+	# extractive_summary = gensim.summarization.summarize(text, ratio=0.5)
+	model = Summarizer()
+	extractive_summary = model(text, ratio=0.5)
 	summary = summarize_chunks(extractive_summary, bart_tokenizer, bart_model)
 
 	basePath = "./assets/outputs/summarization/"

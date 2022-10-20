@@ -209,7 +209,7 @@ def create_social(filename):
         return fig
 
 
-    app.run_server(debug=True)
+    app.run_server()
 
 
-create_social("./assets/inputs/standardized_covid_dataset_labelled.xlsx")
+# create_social("./assets/inputs/standardized_covid_dataset_labelled.xlsx")
