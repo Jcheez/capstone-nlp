@@ -1,4 +1,5 @@
-from dash import Dash, dcc, html, Input, Output
+from dash import Dash, dcc, html, dash_table
+from dash.dependencies import Input, Output, State
 from os import path
 from src.sentimentAnalysis.backend import run, run_absa
 import pandas as pd
@@ -18,7 +19,7 @@ def create_sentiment(filepath):
 
 
     COLOR_MAPPING = {
-        'joy': 'Yellow',
+        'joy': 'Orange',
         'sadness': 'Blue',
         'fear': 'Purple',
         'anger': 'Red',
@@ -65,7 +66,7 @@ def create_sentiment(filepath):
                     html.Div([
                         html.P(id='numObservations', style={'fontSize': '48px', 'margin': 0}),
                         html.P(
-                            "Observations", style={'fontSize': '12px', 'margin': 0}
+                            "Text Data", style={'fontSize': '12px', 'margin': 0}
                         )
                     ], className="mini_container"),
                     html.Div([
@@ -74,20 +75,20 @@ def create_sentiment(filepath):
                             "Topic Labels", style={'fontSize': '12px', 'margin': 0}
                         )
                     ], className="mini_container"),
+                    # html.Div([
+                    #     html.P(id='numAspectObservations', style={'fontSize': '48px', 'margin': 0}),
+                    #     html.P(
+                    #         "Aspect Data", style={'fontSize': '12px', 'margin': 0}
+                    #     )
+                    # ], className="mini_container"),
                     html.Div([
                         html.P(id='numAspectLabels', style={'fontSize': '48px', 'margin': 0}),
                         html.P(
                             "Aspect Labels", style={'fontSize': '12px', 'margin': 0}
                         )
-                    ], className="mini_container"),
-                    html.Div([
-                        html.P(id='numAspectObservations', style={'fontSize': '48px', 'margin': 0}),
-                        html.P(
-                            "Aspect Observations", style={'fontSize': '12px', 'margin': 0}
-                        )
                     ], className="mini_container")
                 ], style={"display": "flex", "flex-direction": "row"}),
-                html.Div(dcc.Graph(id="sentimentBar"), className="plots")
+                html.Div(dcc.Graph(id="absaBar"), className="plots")
             ], className="right-col")
         ], style={"display": "flex", "flex-direction": "row"}),
         html.Div([
@@ -98,10 +99,32 @@ def create_sentiment(filepath):
             ),
             html.Div(
                 html.Div(
-                    dcc.Graph(id="absaBar"), className="plots"
+                    dcc.Graph(id="sentimentBar"), className="plots"
                 ), className="gen-col"
             ),
-        ], style={"display": "flex", "flex-direction": "row"})
+        ], style={"display": "flex", "flex-direction": "row"}),
+        html.Div([
+            html.Div(
+                html.Div(
+                    dash_table.DataTable(
+                        id='sample-text', 
+                        columns=[{"name": "Sample Text", "id": "text"}, {"name": "Score", "id": "score"}], 
+                        style_header=dict(textAlign="center"),
+                        style_data=dict(textAlign="left", whiteSpace='normal', height='auto'),
+                        ), className="plots"
+                ), className="gen-col"
+            ),
+            html.Div(
+                html.Div(
+                    dash_table.DataTable(
+                        id='sample-text2', 
+                        columns=[{"name": "Sample Text", "id": "text"}, {"name": "Score", "id": "score"}], 
+                        style_header=dict(textAlign="center"),
+                        style_data=dict(textAlign="left", whiteSpace='normal', height='auto'),
+                        ), className="plots"
+                ), className="gen-col"
+            ),
+        ], style={"display": "flex", "flex-direction": "row"}),
     ], style={"display": "flex", "flex-direction": "column"})
 
 
@@ -119,6 +142,7 @@ def create_sentiment(filepath):
             dataset = dataset[dataset['label'].isin(filter)]
         if sortby is not None:
             dataset = dataset[dataset['emotion'] == sortby]
+
         fig = px.histogram(
             dataset, 
             x='label', 
@@ -126,9 +150,9 @@ def create_sentiment(filepath):
             color='emotion', 
             barmode="group", 
             histfunc="count", 
-            title="Emotion classification by Label",
+            title="Topic Based Emotional Classification",
             labels= {'label': 'Topic Labels', 'emotion': 'Emotions'},
-            color_discrete_map=COLOR_MAPPING
+            color_discrete_map=COLOR_MAPPING,
         ).update_layout(title_x=0.5).update_xaxes(categoryorder=direction)
         return fig
 
@@ -177,8 +201,8 @@ def create_sentiment(filepath):
             values="score", 
             names='emot',
             color='emot',
-            title="Proportion of Emotion Classification by Label",
-            color_discrete_map=COLOR_MAPPING
+            title="Proportion of Emotion Classification by Topic Label",
+            color_discrete_map=COLOR_MAPPING,
         ).update_layout(title_x=0.5, legend_title="Emotions")
         return fig
 
@@ -197,12 +221,11 @@ def create_sentiment(filepath):
 
 
     # Callback to update DA
-
     @app.callback(
         Output("numObservations", 'children'),
         Output("numLabels", 'children'),
         Output("numAspectLabels", 'children'),
-        Output("numAspectObservations", 'children'),
+        # Output("numAspectObservations", 'children'),
         Input("topic-label-dropdown", "value"),
         Input("aspect-label-dropdown", "value")
     )
@@ -215,7 +238,45 @@ def create_sentiment(filepath):
         if len(aspects) > 0:
             dataset_absa = dataset_absa[dataset_absa['aspect_f'].isin(aspects)]
 
-        return len(dataset), len(dataset['label'].unique()), len(dataset_absa['aspect_f'].dropna().unique()), len(dataset_absa)
+        return len(dataset), len(dataset['label'].unique()), len(dataset_absa['aspect_f'].dropna().unique())#, len(dataset_absa)
 
+    # callback for graph clicks
+    @app.callback(
+        Output("sample-text", 'data'),
+        Input("sentimentBar", "clickData"),
+        State('sentimentBar', 'figure'),
+    )
+    def sample_text_sentimentBar(clickData, figure):
+        if clickData is not None and figure is not None:
+            curve = clickData['points'][0]['curveNumber']
+            label = clickData['points'][0]['x']
+            emotion = figure['data'][curve]['name']
+
+            dataset = df
+
+            dataset = dataset[(dataset['label'] == label) & (dataset['emotion'] == emotion)]
+            dataset.sort_values(by='score', ascending=False, inplace=True)
+
+            dataset = dataset.head(5)
+            return dataset[['text', 'score']].to_dict('records')
+
+    @app.callback(
+        Output("sample-text2", 'data'),
+        Input("absaBar", "clickData"),
+        State('absaBar', 'figure')
+    )
+    def sample_text_aspectBar(absaClick, absaFig):
+        if absaClick is not None and absaFig is not None:
+            curve = absaClick['points'][0]['curveNumber']
+            aspect = absaClick['points'][0]['x']
+            emotion = absaFig['data'][curve]['name']
+
+            dataset = absa_df
+
+            dataset = dataset[(dataset['aspect_f'] == aspect) & (dataset['emotion'] == emotion)]
+            dataset.sort_values(by='score', ascending=False, inplace=True)
+
+            dataset = dataset.head(5)
+            return dataset[['text', 'score']].to_dict('records')
 
     app.run_server()

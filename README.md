@@ -22,15 +22,17 @@ Click the interpreter that corresponds to the virtual environment ![Interpreter 
 
 8. Type the following code in the terminal: `pip install virtualenv`
 
-9. Create a new virtual environment using the following code: `virtualenv venv`
+9. To create a new virtual environment, type the following code in the terminal: `virtualenv venv`
 
-10. Start virtual environment (venv) using: `venv\Scripts\activate`
+10. Start virtual environment (venv) by typing the following in the terminal: `venv\Scripts\activate`
 
-11. Install requirements: `pip install -r requirements.txt`
+11. To install all package dependencies, type the following code in the terminal: `pip install -r requirements.txt`
 
-12. Type the following code: `python main.py`
+12. To start the application, type the following code in the terminal: `python main.py`
 
-13. To deactivate the virtual environment: `venv\Scripts\deactivate`
+13. View the application at the following link: http://localhost:8050
+
+14. To deactivate the virtual environment, type the following code in the terminal: `venv\Scripts\deactivate`
 
 
 ### Mac Installation
@@ -48,12 +50,14 @@ Click the interpreter that corresponds to the virtual environment ![Interpreter 
 
 5. Type the following code in the terminal: `pip install virtualenv`
 
-6. Create a new virtual environment using the following code: `virtualenv venv`
+6. To create a new virtual environment, type the following code in the terminal: `virtualenv venv`
 
-7. Start virtual environment (venv) using: `source venv/bin/activate`
+7. Start virtual environment (venv) by typing the following in the terminal: `source venv/bin/activate`
 
-8. Install requirements: `pip install -r requirements.txt`
+8. To install all package dependencies, type the following code in the terminal: `pip install -r requirements.txt`
 
-9. Type the following code: `python main.py`
+9. To start the application, type the following code in the terminal: `python main.py`
 
-10. To deactivate the virtual environment: `source venv/bin/deactivate`
+10. View the application at the following link: http://localhost:8050
+
+11. To deactivate the virtual environment, type the following code in the terminal: `source venv/bin/deactivate`
