@@ -6,14 +6,14 @@ https://stackoverflow.com/questions/64261546/how-to-solve-error-microsoft-visual
 
 2. Install [python](https://www.python.org/downloads/)
 
-3. Download [vusual studio Code](https://code.visualstudio.com/download)
+3. Download [visual studio Code](https://code.visualstudio.com/download)
 
 4. Download the project by clicking Code -> Download Zip. Unzip the project and place the unzipped folder in the desktop.
 ![Download Repository](./assets/pics-readme/download-repo.png)
 
 5. Open up Visual Studio Code. Click on File -> Open Folder. Open up the project from the desktop
 
-6. In visual studio code, click Terminal -> New Terminal. Ensure that the terminal type is Command Prompt
+6. In visual studio code, click Terminal -> New Terminal. Click on the terminal type: Command Prompt
 ![Command Prompt Image](./assets/pics-readme/cmd.png)
 
 7. Change the python interpreter in Visual Studio Code
@@ -24,7 +24,7 @@ Click the interpreter that corresponds to the virtual environment ![Interpreter 
 
 9. Create a new virtual environment using the following code: `virtualenv venv`
 
-10. Start virtual environemnt (venv) using: `venv\Scripts\activate`
+10. Start virtual environment (venv) using: `venv\Scripts\activate`
 
 11. Install requirements: `pip install -r requirements.txt`
 
@@ -50,7 +50,7 @@ Click the interpreter that corresponds to the virtual environment ![Interpreter 
 
 6. Create a new virtual environment using the following code: `virtualenv venv`
 
-7. Start virtual environemnt (venv) using: `source venv/bin/activate`
+7. Start virtual environment (venv) using: `source venv/bin/activate`
 
 8. Install requirements: `pip install -r requirements.txt`
 
