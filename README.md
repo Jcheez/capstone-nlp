@@ -12,12 +12,20 @@ https://stackoverflow.com/questions/64261546/how-to-solve-error-microsoft-visual
 
 5. Open up Visual Studio Code. Click on File -> Open Folder. Open up the project from the desktop
 
-6. In visual studio code, click Terminal -> New Terminal. Type the following code in the terminal: `pip install virtualenv`
+6. In visual studio code, click Terminal -> New Terminal. Ensure that the terminal type is Command Prompt
+![Command Prompt Image](./assets/pics-readme/cmd.png)
 
-5. Create a new virtual environment using the following code: `virtualenv venv`
+7. Change the python interpreter in Visual Studio Code
+![Interpreter 1](./assets/pics-readme/interpreter1.png)
 
-6. Start virtual environemnt (venv) using: `venv\Scripts\activate`
+8. Type the following code in the terminal: `pip install virtualenv`
 
-7. Install requirements: `pip install -r requirements.txt`
+9. Create a new virtual environment using the following code: `virtualenv venv`
 
-8. Type the following code: `python main.py`
+10. Start virtual environemnt (venv) using: `venv\Scripts\activate`
+
+11. Install requirements: `pip install -r requirements.txt`
+
+12. Type the following code: `python main.py`
+
+13. To deactivate the virtual environment: `venv\Scripts\deactivate`
