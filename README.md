@@ -22,6 +22,7 @@ Click the interpreter that corresponds to the virtual environment ![Interpreter 
 
 8. Type the following code in the terminal: `pip install virtualenv`
 
+
 9. To create a new virtual environment, type the following code in the terminal: `virtualenv venv`
 
 10. Start virtual environment (venv) by typing the following in the terminal: `venv\Scripts\activate`
@@ -49,6 +50,7 @@ Click the interpreter that corresponds to the virtual environment ![Interpreter 
 Click the interpreter that corresponds to the virtual environment ![Interpreter 2](./assets/pics-readme/interpreter2.png)
 
 5. Type the following code in the terminal: `pip install virtualenv`
+
 
 6. To create a new virtual environment, type the following code in the terminal: `virtualenv venv`
 
