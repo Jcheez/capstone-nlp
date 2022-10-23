@@ -16,9 +16,6 @@ def create_social(filename):
     output_path = "./assets/outputs"
 
     # Variable that can be changed by user
-    # comments_file_name = "standardized_covid_dataset_labelled"
-    # posts_file_name = "standardized_ig_dataset_labelled"
-    
     df = pd.read_excel(filename)
 
     # mandatory columns (standardized naming)
@@ -30,11 +27,10 @@ def create_social(filename):
     # likes: only for content_type = 'Post'
     # comments: only for content_type = 'Post'
 
-
     def process_timeseries_df(df):
         df['time'] = pd.to_datetime(df['time'])
         return df
-    content_type = 'Posts' if df.iloc[0]['content_type'] == 'Posts' else 'Comments'
+    content_type = 'Posts' if df.iloc[0]['content_type'] == 'Post' else 'Comment'
 
     df = process_timeseries_df(df)
 
