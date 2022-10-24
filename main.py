@@ -2,7 +2,7 @@ from fileinput import filename
 import tkinter as tk
 from tkinter import filedialog as fd
 from tkinter import ttk
-from tkinter.messagebox import showinfo
+from tkinter.messagebox import showinfo, showerror, showwarning
 import os
 import time
 
@@ -109,17 +109,26 @@ if __name__ == "__main__":
     app.mainloop()
     
     if (filechosen[0] == 0 or application[0] == 0):
-        print("No file or application chosen, application will now terminate")
+        root = tk.Tk()
+        root.withdraw()
+        showerror("Error", "No file or application chosen, application will now terminate")
+        root.destroy()
         exit()
     
     if (application[0] == "Text Summarization"):
         if (".txt" not in filechosen[0]):
-            print("Bad file type chosen for Text Summarization, please select a text file with .txt extension")
+            root = tk.Tk()
+            root.withdraw()
+            showerror("Error", "Bad file type chosen for Text Summarization, please select a text file with .txt extension")
+            root.destroy()
             exit()
     
     if (application[0] != "Text Summarization"):
         if (".xlsx" not in filechosen[0]):
-            print(f"Bad file type chosen for {application[0]}, please select an Excel file with extension .xlsx")
+            root = tk.Tk()
+            root.withdraw()
+            showerror("Error", f"Bad file type chosen for {application[0]}, please select an Excel file with extension .xlsx")
+            root.destroy()
             exit()
 
     
