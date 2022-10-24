@@ -60,6 +60,7 @@ def topic_model(filepath):
     app.layout = html.Div([
 
         html.H1("Topic Modeling Summary", style={"textAlign": "center"}),
+        html.H2("Optimal Number of Topics", style={"textAlign": "center"}),
         html.P(f"File: {basename}.xlsx",
             style={"textAlign": "center"}),
 
