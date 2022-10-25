@@ -1,6 +1,11 @@
 import os
-import gensim
 # from gensim.summarization import summarize
+from sumy.summarizers.lex_rank import LexRankSummarizer
+from sumy.parsers.plaintext import PlaintextParser
+from sumy.nlp.tokenizers import Tokenizer
+import nltk
+nltk.download("punkt")
+from nltk.tokenize import sent_tokenize
 from summarizer import Summarizer
 from transformers import BartForConditionalGeneration, BartTokenizer
 
@@ -10,6 +15,9 @@ def combine_string(sentences_list):
 		combined += i
 		combined += ". "
 	return combined
+
+def sentence_count(text): 
+	return len(sent_tokenize(text))
 
 def word_count(text):
 	word_list = text.split()
@@ -54,8 +62,13 @@ def run_summary(filepath):
 
 	text = contents.strip().replace("\n","")
 	# extractive_summary = gensim.summarization.summarize(text, ratio=0.5)
-	model = Summarizer()
-	extractive_summary = model(text, ratio=0.5)
+	model = LexRankSummarizer()
+	my_parser = PlaintextParser.from_string(text, Tokenizer("english"))
+	lexrank_summary = model(my_parser.document, sentences_count = sentence_count(text)/2)
+	extractive_summary = ""
+	for sentence in lexrank_summary:
+		extractive_summary = extractive_summary + str(sentence)
+	# extractive_summary = model(text, ratio=0.5)
 	summary = summarize_chunks(extractive_summary, bart_tokenizer, bart_model)
 
 	basePath = "./assets/outputs/summarization/"
