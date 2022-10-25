@@ -72,7 +72,8 @@ def create_social(filename):
     # combined
     trend_df_merged = pd.concat(
         [trend_df_count, trend_df_proportion], axis=1)
-    trending = trend_df_merged[(trend_df_merged['proportion_pct_change'] > 0.5) & (trend_df_merged['count_change'] > 50)]
+    trending = trend_df_merged[(trend_df_merged['proportion_pct_change'] > 0.5) & (
+        trend_df_merged['count_change'] > 50)]
     trending.reset_index(inplace=True)
     trending_topics = trending[['trunc_time', 'label']]
     trending_topics.rename(
@@ -82,8 +83,10 @@ def create_social(filename):
         html.H1("Social Media Analysis", style={"textAlign": "center"}),
         html.P(f"File: {filename}", style={"textAlign": "center"}),
         html.P(f'Content Type: {content_type}', style={"textAlign": "center"}),
+        html.H2(""),
         html.Div([
             html.Div([
+                html.H1("Filters"),
                 html.P("Topic Labels", className="control_label"),
                 dcc.Dropdown(
                     id="Topic Label",
@@ -99,7 +102,7 @@ def create_social(filename):
                              {'label': 'Daily', 'value': 'Daily'}],
                     value='Monthly'
                 ),
-                html.P("Reaction Type *(only for Content Type: Posts)*",
+                html.P("Reaction Type (only for Content Type: Posts)",
                        className="control_label"),
                 dcc.Dropdown(
                     id='Reaction Type',
@@ -121,11 +124,13 @@ def create_social(filename):
                 dcc.Loading(dcc.Graph(id='time_series'))
             ], className="right-col")
         ], style={"display": "flex", "flex-direction": "row"}),
+        html.Br(),
         dcc.Loading(dcc.Graph(id='proportion_graph')),
 
 
         html.Div([
             html.Div([
+                html.H3("Trending Topics"),
                 html.P("Date Range for Trending Topics",
                        className="control_label"),
                 dcc.DatePickerRange(
@@ -136,9 +141,9 @@ def create_social(filename):
                     max_date_allowed=df["time"].max(),
                     initial_visible_month=df["time"].min(),
                 ),
-                html.P("Configure the following metrics to determine Trending Topics: ",
+                html.P("Configure the following metrics that will be used to determine Trending Topics: ",
                        className="control_label"),
-                html.P("Increase in Frequency by Month",
+                html.P("Metric 1: Increase in Number of Posts under that Topic from the previous month",
                        className="control_label"),
                 daq.NumericInput(
                     id='count_change',
@@ -146,14 +151,16 @@ def create_social(filename):
                     max=trend_df_merged['count_change'].max(),
                     value=10
                 ),
-                html.P("Percentage Increase in Proportion by Month",
+                html.P("Metric 2: Percentage Increase in Proportion of Posts under that Topic from the previous month",
                        className="control_label"),
                 daq.NumericInput(
                     id='prop_pct_change',
                     min=0,
                     max=trend_df_merged['proportion_pct_change'].max()*100,
-                    value=50
+                    value=0
                 ),
+                html.P(
+                    "Note: Users can set the metric to 0 if it should not be used to determine whether topics are trending"),
             ], className="left-col"),
             html.Div([
                 html.H3("Trending Topics within Date Range",
@@ -206,18 +213,18 @@ def create_social(filename):
                 lambda x: Timestamp(x.year, x.month, x.day))
 
         graphPlot = timeSeries[['label', 'trunc_time']].groupby(
-            ['trunc_time', 'label']).size().reset_index().rename(columns={0: 'Frequency'})
+            ['trunc_time', 'label']).size().reset_index().rename(columns={0: 'Number'})
 
-        fig = px.area(graphPlot, x='trunc_time', y='Frequency', color='label',
-                      labels={"trunc_time": "Date"}, title=f"Frequency of {content_type} over time")
+        fig = px.line(graphPlot, x='trunc_time', y='Number', color='label',
+                      labels={"trunc_time": "Date", "label": "Topic Label"}, title=f"Number of {content_type} over time")
 
         if (reaction_type != 'None' and content_type == 'Posts'):
             reaction_type_column = reaction_type.lower()
             count_reaction = timeSeries.groupby(['label', 'trunc_time'])[
-                reaction_type_column].agg('sum').reset_index(name='Count')
+                reaction_type_column].agg('sum').reset_index(name='Number')
 
-            fig = px.area(count_reaction, x='trunc_time', y='Count', color='label',
-                          labels={"trunc_time": "Date"}, title=f"Count of {reaction_type} over time")
+            fig = px.area(count_reaction, x='trunc_time', y='Number', color='label',
+                          labels={"trunc_time": "Date", "label": "Topic Label"}, title=f"Number of {reaction_type} over time")
 
         # Set yearly intervals
         if time_frame == 'Yearly':
@@ -228,7 +235,7 @@ def create_social(filename):
                 )
             )
 
-        fig.update_layout(xaxis_title='Time', height=600, title_x=0.3)
+        fig.update_layout(xaxis_title='Time', height=500, title_x=0.3)
         return fig
 
     @app.callback(
@@ -262,28 +269,22 @@ def create_social(filename):
             timeSeries['trunc_time'] = timeSeries['time'].apply(
                 lambda x: Timestamp(x.year, x.month, x.day))
 
-        graphPlot = timeSeries[['label', 'trunc_time']].groupby(
-            ['trunc_time', 'label']).size().reset_index().rename(columns={0: 'Frequency'})
-
-        fig = px.area(graphPlot, x='trunc_time', y='Frequency', color='label',
-                      labels={"trunc_time": "Date"}, title=f"Frequency of {content_type} over time")
-
         proportion_df = timeSeries[['label', 'trunc_time']
-                                   ].value_counts().reset_index(name='count')
-        proportion_df['Proportion'] = proportion_df['count'] / \
-            proportion_df.groupby('trunc_time')['count'].transform('sum')
-        fig = px.bar(proportion_df, y='Proportion', x='trunc_time', text='label', color='label',
+                                   ].value_counts().reset_index(name='Number')
+        proportion_df['Proportion'] = proportion_df['Number'] / \
+            proportion_df.groupby('trunc_time')['Number'].transform('sum')
+        fig = px.bar(proportion_df, y='Proportion', x='trunc_time', text='label', color='label', labels={"label": "Topic Label"},
                      title="Proportion of Topic Label over time")
 
         if (reaction_type != 'None' and content_type == 'Posts'):
             reaction_type_column = reaction_type.lower()
             count_reaction = timeSeries.groupby(['label', 'trunc_time'])[
-                reaction_type_column].agg('sum').reset_index(name='Count')
+                reaction_type_column].agg('sum').reset_index(name='Number')
 
             proportion_df = count_reaction
-            proportion_df['Proportion'] = proportion_df['Count'] / \
-                proportion_df.groupby('trunc_time')['Count'].transform('sum')
-            fig = px.bar(proportion_df, y='Proportion', x='trunc_time', text='label', color='label', labels={"trunc_time": "Date"},
+            proportion_df['Proportion'] = proportion_df['Number'] / \
+                proportion_df.groupby('trunc_time')['Number'].transform('sum')
+            fig = px.bar(proportion_df, y='Proportion', x='trunc_time', text='label', color='label', labels={"trunc_time": "Date", "label": "Topic Label"},
                          title=f"Proportion of {reaction_type} for each Topic Label over time")
 
         # Set yearly intervals
@@ -307,7 +308,8 @@ def create_social(filename):
     )
     def update_trending_topics_table(start_date, end_date, count_change, prop_pct_change):
         prop_pct_change = prop_pct_change/100
-        trending = trend_df_merged[(trend_df_merged['proportion_pct_change'] >= prop_pct_change) & (trend_df_merged['count_change'] >= count_change)]
+        trending = trend_df_merged[(trend_df_merged['proportion_pct_change'] >= prop_pct_change) & (
+            trend_df_merged['count_change'] >= count_change)]
         trending.reset_index(inplace=True)
         trending_topics = trending[['trunc_time', 'label']]
         trending_topics.rename(
@@ -315,6 +317,9 @@ def create_social(filename):
 
         updated_trending_topics = trending_topics.loc[trending_topics['Month'].between(
             pd.to_datetime(start_date), pd.to_datetime(end_date))]
+
+        updated_trending_topics['Month'] = updated_trending_topics['Month'].apply(
+            lambda x: x.strftime("%m/%Y"))
 
         return updated_trending_topics.to_dict('records')
 
