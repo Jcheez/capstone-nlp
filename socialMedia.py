@@ -1,4 +1,4 @@
-# Time series + DA for Social Media data
+# imports required for social media dashboard
 from enum import auto
 from dash import Dash, html, dcc, dash_table
 import plotly.express as px
@@ -8,43 +8,32 @@ import pandas as pd
 from pandas import Timestamp
 import dash_daq as daq
 
+# creation of Social Media dashboard using Dash
+
 
 def create_social(filename):
     app = Dash(__name__)
 
-    basePath = "./assets/inputs/"
-    output_path = "./assets/outputs"
-
-    # Variable that can be changed by user
+    # filename depends on the File Chosen
     df = pd.read_excel(filename)
 
-    # mandatory columns (standardized naming)
-    # content_type: 'Post' or 'Comment'
-    # id
-    # text
-    # time
-    # label
-    # likes: only for content_type = 'Post'
-    # comments: only for content_type = 'Post'
-
+    # social media dashboard can take in 2 types of content: either 'Post' or 'Comment'
+    # this will be determined from the excel data taken in
     content_type = 'Posts' if df.iloc[0]['content_type'] == 'Post' else 'Comment'
+
+    # process time series data
 
     def process_timeseries_df(df):
         df['time'] = pd.to_datetime(df['time'])
         return df
-
     df = process_timeseries_df(df)
 
-    # for trending topics
+    # manipulation of data to obtain trending topics
     trend_df = df
-    trend_df['trunc_time'] = trend_df['time'].apply(
-        lambda x: Timestamp(x.year, x.month, 1))
-    trend_df = trend_df[['label', 'trunc_time']
-                        ].value_counts().reset_index(name='count')
-    trend_df['proportion'] = trend_df['count'] / \
-        trend_df.groupby('trunc_time')['count'].transform('sum')
-    trend_df.sort_values(['trunc_time', 'label'],
-                         ascending=True, inplace=True)
+    trend_df['trunc_time'] = trend_df['time'].apply( lambda x: Timestamp(x.year, x.month, 1))
+    trend_df = trend_df[['label', 'trunc_time']].value_counts().reset_index(name='count')
+    trend_df['proportion'] = trend_df['count'] / trend_df.groupby('trunc_time')['count'].transform('sum')
+    trend_df.sort_values(['trunc_time', 'label'],ascending=True, inplace=True)
 
     # calculations for proportion
     trend_df_proportion = pd.melt(
@@ -69,23 +58,26 @@ def create_social(filename):
                                           .apply(pd.Series.pct_change))
     trend_df_count.set_index('label', append=True, inplace=True)
 
-    # combined
+    # combined metrics (count & proportion) to determine trending topics
     trend_df_merged = pd.concat(
         [trend_df_count, trend_df_proportion], axis=1)
-    trending = trend_df_merged[(trend_df_merged['proportion_pct_change'] > 0.5) & (
-        trend_df_merged['count_change'] > 50)]
+    trending = trend_df_merged[(trend_df_merged['proportion_pct_change'] > 0) & (
+        trend_df_merged['count_change'] > 10)]
     trending.reset_index(inplace=True)
     trending_topics = trending[['trunc_time', 'label']]
     trending_topics.rename(
         columns={'trunc_time': 'Month', 'label': 'Trending Topic'}, inplace=True)
 
+
+    # creating layout of Dash application
     app.layout = html.Div([
         html.H1("Social Media Analysis", style={"textAlign": "center"}),
         html.P(f"File: {filename}", style={"textAlign": "center"}),
         html.P(f'Content Type: {content_type}', style={"textAlign": "center"}),
-        html.H2(""),
         html.Div([
             html.Div([
+
+                # visualisation filters 
                 html.H1("Filters"),
                 html.P("Topic Labels", className="control_label"),
                 dcc.Dropdown(
@@ -120,17 +112,22 @@ def create_social(filename):
                     initial_visible_month=df["time"].min(),
                 ),
             ], className="left-col"),
+
+            # graph plot on count of posts/comment over time
             html.Div([
                 dcc.Loading(dcc.Graph(id='time_series'))
             ], className="right-col")
         ], style={"display": "flex", "flex-direction": "row"}),
         html.Br(),
+
+        # graph plot on proportion of topic labels over time
         dcc.Loading(dcc.Graph(id='proportion_graph')),
+        html.Br(),
 
-
+        # configurations for trending topics
         html.Div([
             html.Div([
-                html.H3("Trending Topics"),
+                html.H3("Configuration for Trending Topics"),
                 html.P("Date Range for Trending Topics",
                        className="control_label"),
                 dcc.DatePickerRange(
@@ -141,8 +138,6 @@ def create_social(filename):
                     max_date_allowed=df["time"].max(),
                     initial_visible_month=df["time"].min(),
                 ),
-                html.P("Configure the following metrics that will be used to determine Trending Topics: ",
-                       className="control_label"),
                 html.P("Metric 1: Increase in Number of Posts under that Topic from the previous month",
                        className="control_label"),
                 daq.NumericInput(
@@ -162,6 +157,8 @@ def create_social(filename):
                 html.P(
                     "Note: Users can set the metric to 0 if it should not be used to determine whether topics are trending"),
             ], className="left-col"),
+
+            # table that displays the trending topics
             html.Div([
                 html.H3("Trending Topics within Date Range",
                         style={"textAlign": "center"}),
@@ -181,6 +178,7 @@ def create_social(filename):
         ], style={"display": "flex", "flex-direction": "row"}),
     ])
 
+    # updating graph plot on count of posts/comment over time, based on the filters selected
     @ app.callback(
         Output('time_series', 'figure'),
         [Input('Topic Label', 'value'),
@@ -212,12 +210,14 @@ def create_social(filename):
             timeSeries['trunc_time'] = timeSeries['time'].apply(
                 lambda x: Timestamp(x.year, x.month, x.day))
 
+        # Creating plot
         graphPlot = timeSeries[['label', 'trunc_time']].groupby(
             ['trunc_time', 'label']).size().reset_index().rename(columns={0: 'Number'})
 
         fig = px.line(graphPlot, x='trunc_time', y='Number', color='label',
                       labels={"trunc_time": "Date", "label": "Topic Label"}, title=f"Number of {content_type} over time")
 
+        # Filter by reaction type (for Posts)
         if (reaction_type != 'None' and content_type == 'Posts'):
             reaction_type_column = reaction_type.lower()
             count_reaction = timeSeries.groupby(['label', 'trunc_time'])[
@@ -238,6 +238,7 @@ def create_social(filename):
         fig.update_layout(xaxis_title='Time', height=500, title_x=0.3)
         return fig
 
+    # Updating graph plot on proportion of topic labels over time, based on filters selected
     @app.callback(
         Output('proportion_graph', 'figure'),
         [Input('Topic Label', 'value'),
@@ -296,9 +297,11 @@ def create_social(filename):
                 )
             )
 
-        fig.update_layout(xaxis_title='Time', height=1000, title_x=0.5)
+        fig.update_layout(xaxis_title='Time', height=700, title_x=0.5)
         return fig
 
+
+    # Updating table of trending topics based on filters selected
     @app.callback(
         Output('trending_table', 'data'),
         [Input('Date Range for Trends', 'start_date'),
@@ -308,13 +311,17 @@ def create_social(filename):
     )
     def update_trending_topics_table(start_date, end_date, count_change, prop_pct_change):
         prop_pct_change = prop_pct_change/100
+
+        # Filtering data based on the metrics selected
         trending = trend_df_merged[(trend_df_merged['proportion_pct_change'] >= prop_pct_change) & (
             trend_df_merged['count_change'] >= count_change)]
+
         trending.reset_index(inplace=True)
         trending_topics = trending[['trunc_time', 'label']]
         trending_topics.rename(
             columns={'trunc_time': 'Month', 'label': 'Trending Topic'}, inplace=True)
 
+        # Filtering data based on date range selected
         updated_trending_topics = trending_topics.loc[trending_topics['Month'].between(
             pd.to_datetime(start_date), pd.to_datetime(end_date))]
 
