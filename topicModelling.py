@@ -66,6 +66,7 @@ def topic_model(filepath):
 
         dcc.Markdown("**Topic Breakdown**",
                     style={'color': 'black', 'fontSize': 25, 'textAlign': 'center'}),
+        html.H3("Graph displays the proportion of text data that belongs to each topic"),
 
         dcc.Graph(
             id='Topic-breakdown',
@@ -79,6 +80,7 @@ def topic_model(filepath):
                     style={'color': 'black', 'fontSize': 25, 'textAlign': 'center'}),
         html.Div([
         dcc.Markdown('Word Cloud Topic'),
+            html.H3("Word Cloud is a representation of the most common words found in each topic"),
             dcc.Dropdown(
                 id='Word Cloud Topic',
                 options=[{'label': l, 'value': l}
@@ -100,7 +102,9 @@ def topic_model(filepath):
     )
     def make_image(wordcloud_topic):
         img = BytesIO()
-        plot_wordcloud(df_wordcloud.iloc[wordcloud_topic]["Doc"]).save(img, format='PNG')
+        plot_wordcloud(df_wordcloud.loc[df_wordcloud["Topic"] == wordcloud_topic].iloc[0]["Doc"]).save(img, format='PNG')
         return 'data:image/png;base64,{}'.format(base64.b64encode(img.getvalue()).decode())
 
     app.run_server()
+
+# topic_model("assets/inputs/standardized_covid_dataset_labelled.csv")

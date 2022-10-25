@@ -114,6 +114,18 @@ def create_topics(filepath):
     docs_df["original_text"] = df["text"]
     docs_df["cleaned_text"] = docs_df["Doc"]
     docs_df = docs_df[["original_text", "cleaned_text", "Topic"]]
+    replace_alpha = {'a':'1','b':'2','c':'3','d':'4','e':'5','f':'6','g':'7','h':'8',
+    'i':'9','j':'10','k':'11','l':'12','m':'13','n':'14','o':'15','p':'16','q':'17',
+    'r':'18','s':'19','t':'20','u':'21','v':'22','w':'23','x':'24','y':'25','z':'26'
+    }
+    replace_number = {}
+    for key, item in replace_alpha.items():
+        replace_number[int(item) - 1] = key.upper()
+
+
+    docs_df["Topic"] = docs_df["Topic"].replace(replace_number)
+    final_chart_df["Topic"] = final_chart_df["Topic"].replace(replace_number)
+    docs_per_topic["Topic"] = docs_per_topic["Topic"].replace(replace_number)
     final_chart_df.to_csv(os.path.join(path, f"{basename}_chart.csv"), index=False)
     docs_df.to_csv(os.path.join(path, f"{basename}_documents.csv"), index=False)
     docs_per_topic.to_csv(os.path.join(path, f"{basename}_wordcloud.csv"), index=False)
