@@ -12,6 +12,8 @@ def create_sentiment(filepath):
 
     if not path.isfile(f"{output_path}/{file_name}_result.csv"):
         run(file_name)
+
+    if not path.isfile(f"{output_path}/{file_name}_absa.csv"):
         run_absa(file_name)
 
     df = pd.read_csv(f"{output_path}/{file_name}_result.csv")
@@ -47,12 +49,6 @@ def create_sentiment(filepath):
                         id="sort-emotion-dropdown",
                         options= [{'label' : l, 'value' : l} for l in df['emotion'].unique()],
                         value=None,
-                    ),
-                    html.P("Sort Direction:", className="control_label"),   
-                    dcc.RadioItems(
-                        id="sort-direction-radio",
-                        options= [{'label' : 'Ascending', 'value' : 'total ascending'}, {'label' : 'Descending', 'value' : 'total descending'}],
-                        value='total ascending',
                     )
                 ]),
             ], className="left-col"),
@@ -98,6 +94,12 @@ def create_sentiment(filepath):
                         options= [{'label' : l, 'value' : l} for l in df['label'].unique()],
                         value=[],
                         multi=True
+                    ),
+                    html.P("Sort Direction:", className="control_label"),   
+                    dcc.RadioItems(
+                        id="sort-direction-radio",
+                        options= [{'label' : 'Ascending', 'value' : 'total ascending'}, {'label' : 'Descending', 'value' : 'total descending'}],
+                        value='total ascending',
                     )
                 ]),
             ], className="left-col"),
