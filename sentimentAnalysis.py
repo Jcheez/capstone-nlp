@@ -12,6 +12,8 @@ def create_sentiment(filepath):
 
     if not path.isfile(f"{output_path}/{file_name}_result.csv"):
         run(file_name)
+
+    if not path.isfile(f"{output_path}/{file_name}_absa.csv"):
         run_absa(file_name)
 
     df = pd.read_csv(f"{output_path}/{file_name}_result.csv")
@@ -34,32 +36,21 @@ def create_sentiment(filepath):
         html.P(f"File: {file_name}", style={"textAlign":"center"}),
         html.Div([
             html.Div([
-                html.P("Filter by Topic Label:", className="control_label"),
-                dcc.Dropdown(
-                    id="topic-label-dropdown",
-                    options= [{'label' : l, 'value' : l} for l in df['label'].unique()],
-                    value=[],
-                    multi=True
-                ),
-                html.P("Filter by Aspect Label:", className="control_label"),   
-                dcc.Dropdown(
-                    id="aspect-label-dropdown",
-                    options= [{'label' : l, 'value' : l} for l in absa_df['aspect_f'].dropna().unique()],
-                    value=[],
-                    multi=True
-                ),
-                html.P("Sort by Emotion:", className="control_label"),   
-                dcc.Dropdown(
-                    id="sort-emotion-dropdown",
-                    options= [{'label' : l, 'value' : l} for l in df['emotion'].unique()],
-                    value=None,
-                ),
-                html.P("Sort Direction:", className="control_label"),   
-                dcc.RadioItems(
-                    id="sort-direction-radio",
-                    options= [{'label' : 'Ascending', 'value' : 'total ascending'}, {'label' : 'Descending', 'value' : 'total descending'}],
-                    value='total ascending',
-                ),
+                html.Div([
+                    html.P("Filter by Aspect Label:", className="control_label"),   
+                    dcc.Dropdown(
+                        id="aspect-label-dropdown",
+                        options= [{'label' : l, 'value' : l} for l in absa_df['aspect_f'].dropna().unique()],
+                        value=[],
+                        multi=True
+                    ),
+                    html.P("Sort by Emotion:", className="control_label"),   
+                    dcc.Dropdown(
+                        id="sort-emotion-dropdown",
+                        options= [{'label' : l, 'value' : l} for l in df['emotion'].unique()],
+                        value=None,
+                    )
+                ]),
             ], className="left-col"),
             html.Div([
                 html.Div([
@@ -88,41 +79,77 @@ def create_sentiment(filepath):
                         )
                     ], className="mini_container")
                 ], style={"display": "flex", "flex-direction": "row"}),
-                html.Div(dcc.Graph(id="absaBar"), className="plots")
+                html.Div([
+                    dcc.Graph(id="absaBar"),
+                    html.P("This graph shows the count of different emotions, based on different aspects. Aspects refers to the common nouns detected from the dataset.")
+                ], className="plots")
             ], className="right-col")
         ], style={"display": "flex", "flex-direction": "row"}),
         html.Div([
+            html.Div([
+                html.Div([
+                    html.P("Filter by Topic Label:", className="control_label"),
+                    dcc.Dropdown(
+                        id="topic-label-dropdown",
+                        options= [{'label' : l, 'value' : l} for l in df['label'].unique()],
+                        value=[],
+                        multi=True
+                    ),
+                    html.P("Sort Direction:", className="control_label"),   
+                    dcc.RadioItems(
+                        id="sort-direction-radio",
+                        options= [{'label' : 'Ascending', 'value' : 'total ascending'}, {'label' : 'Descending', 'value' : 'total descending'}],
+                        value='total ascending',
+                    )
+                ]),
+            ], className="left-col"),
             html.Div(
-                html.Div(
-                    dcc.Graph(id="sentimentPie"), className="plots"
-                ), className="gen-col"
+                html.Div([
+                    dcc.Graph(id="sentimentPie"),
+                    html.P("This graph shows the distribution of emotions based on topic labels")
+                ], className="plots"), className="gen-col-3-items"
             ),
             html.Div(
                 html.Div(
-                    dcc.Graph(id="sentimentBar"), className="plots"
-                ), className="gen-col"
+                    [
+                        dcc.Graph(id="sentimentBar"),
+                        html.P("This graph shows the count of different emotions, based on topic labels")
+                    ], className="plots"
+                ), className="gen-col-3-items"
             ),
         ], style={"display": "flex", "flex-direction": "row"}),
         html.Div([
             html.Div(
                 html.Div(
-                    dash_table.DataTable(
-                        id='sample-text', 
-                        columns=[{"name": "Sample Text", "id": "text"}, {"name": "Score", "id": "score"}], 
-                        style_header=dict(textAlign="center"),
-                        style_data=dict(textAlign="left", whiteSpace='normal', height='auto'),
-                        ), className="plots"
-                ), className="gen-col"
+                    [
+                        html.P(id="topic-table-header", style={'textAlign':'center'}),
+                        dash_table.DataTable(
+                            id='sample-text', 
+                            columns=[{"name": "Sample Text", "id": "text"}, {"name": "Score", "id": "score"}], 
+                            style_header=dict(textAlign="center"),
+                            style_data=dict(textAlign="left", whiteSpace='normal', height='auto'),
+                        ),
+                        html.P("To see sample texts, click on a bar on the Topic Bar graph"),
+                        html.P("Score represents the model's confidence in predicting that a text data is classified under a certain emotion"),
+                        html.P("Top 5 most confident predictions are shown as the sample texts")
+                    ], className="plots"
+                ), className="gen-col-2-items"
             ),
             html.Div(
                 html.Div(
-                    dash_table.DataTable(
-                        id='sample-text2', 
-                        columns=[{"name": "Sample Text", "id": "text"}, {"name": "Score", "id": "score"}], 
-                        style_header=dict(textAlign="center"),
-                        style_data=dict(textAlign="left", whiteSpace='normal', height='auto'),
-                        ), className="plots"
-                ), className="gen-col"
+                    [
+                        html.P(id='aspect-table-header', style={'textAlign':'center'}),
+                        dash_table.DataTable(
+                            id='sample-text2', 
+                            columns=[{"name": "Sample Text", "id": "text"}, {"name": "Score", "id": "score"}], 
+                            style_header=dict(textAlign="center"),
+                            style_data=dict(textAlign="left", whiteSpace='normal', height='auto'),
+                        ),
+                        html.P("To see sample texts, click on a bar on the Aspect graph"),
+                        html.P("Score represents the model's confidence in predicting that an aspect is classified under a certain emotion"),
+                        html.P("Top 5 most confident predictions are shown as the sample texts")
+                    ], className="plots"
+                ), className="gen-col-2-items"
             ),
         ], style={"display": "flex", "flex-direction": "row"}),
     ], style={"display": "flex", "flex-direction": "column"})
@@ -243,10 +270,13 @@ def create_sentiment(filepath):
     # callback for graph clicks
     @app.callback(
         Output("sample-text", 'data'),
+        Output("topic-table-header", 'children'),
         Input("sentimentBar", "clickData"),
         State('sentimentBar', 'figure'),
     )
     def sample_text_sentimentBar(clickData, figure):
+        if clickData is None and figure is None:
+            return None, "Sample text for Topic Based Emotional Classification"
         if clickData is not None and figure is not None:
             curve = clickData['points'][0]['curveNumber']
             label = clickData['points'][0]['x']
@@ -258,14 +288,17 @@ def create_sentiment(filepath):
             dataset.sort_values(by='score', ascending=False, inplace=True)
 
             dataset = dataset.head(5)
-            return dataset[['text', 'score']].to_dict('records')
+            return dataset[['text', 'score']].to_dict('records'), f"Sample text for Topic Based Emotional Classification (Topic: {label}, Emotion: {emotion})"
 
     @app.callback(
         Output("sample-text2", 'data'),
+        Output("aspect-table-header", 'children'),
         Input("absaBar", "clickData"),
         State('absaBar', 'figure')
     )
     def sample_text_aspectBar(absaClick, absaFig):
+        if absaClick is None and absaFig is None:
+            return None, "Sample text for Aspect Based Emotional Classification"
         if absaClick is not None and absaFig is not None:
             curve = absaClick['points'][0]['curveNumber']
             aspect = absaClick['points'][0]['x']
@@ -277,6 +310,6 @@ def create_sentiment(filepath):
             dataset.sort_values(by='score', ascending=False, inplace=True)
 
             dataset = dataset.head(5)
-            return dataset[['text', 'score']].to_dict('records')
+            return dataset[['text', 'score']].to_dict('records'), f"Sample text for Aspect Based Emotional Classification (Aspect: {aspect}, Emotion: {emotion})"
 
     app.run_server()

@@ -9,15 +9,19 @@ body {
     padding: 15px;
     position: relative;
     box-shadow: 2px 2px 2px lightgrey;
-    width: calc(100% / 3);
+    width: calc(100% / 5);
 }
 
-.gen-col {
+.gen-col-3-items {
+    width: calc(200% / 5);
+}
+
+.gen-col-2-items {
     width: calc(100% / 2);
 }
 
 .right-col {
-    width: calc(200% / 3);
+    width: calc(400% / 5);
 }
 
 .mini_container {
