@@ -28,6 +28,7 @@ def topic_model(filepath):
     df_piechart["Words"] = df_piechart["Words"].map(lambda x: x[1: -1].replace("'", ""))
     df_piechart["Words"] = df_piechart["Topic"].astype(str) + ": " + df_piechart["Words"]
     df_piechart = df_piechart.loc[df_piechart["Topic"] != -1]
+    df_piechart = df_piechart.loc[df_piechart["Topic"] != "-1"]
 
     piechart_fig = px.pie(df_piechart, values='Size', names='Words', color='Topic',
                 )
@@ -43,6 +44,7 @@ def topic_model(filepath):
     # Create Word Cloud
     df_wordcloud = pd.read_csv(f"{basePath}{basename}_wordcloud.csv")
     df_wordcloud = df_wordcloud.loc[df_wordcloud["Topic"] != -1]
+    df_wordcloud = df_wordcloud.loc[df_wordcloud["Topic"] != "-1"]
     df_wordcloud['Topic'].unique()
     def plot_wordcloud(long_string):
         # # Import the wordcloud library
