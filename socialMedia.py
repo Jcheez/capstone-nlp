@@ -138,7 +138,7 @@ def create_social(filename):
                     max_date_allowed=df["time"].max(),
                     initial_visible_month=df["time"].min(),
                 ),
-                html.P("Metric 1: Increase in Number of Posts under that Topic from the previous month",
+                html.P("Metric 1: Increase in Number of Posts/Comments under that Topic from the previous month",
                        className="control_label"),
                 daq.NumericInput(
                     id='count_change',
@@ -146,7 +146,7 @@ def create_social(filename):
                     max=trend_df_merged['count_change'].max(),
                     value=10
                 ),
-                html.P("Metric 2: Percentage Increase in Proportion of Posts under that Topic from the previous month",
+                html.P("Metric 2: Percentage Increase in Proportion of Posts/Comments under that Topic from the previous month",
                        className="control_label"),
                 daq.NumericInput(
                     id='prop_pct_change',
