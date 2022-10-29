@@ -43,12 +43,6 @@ def create_sentiment(filepath):
                         options= [{'label' : l, 'value' : l} for l in absa_df['aspect_f'].dropna().unique()],
                         value=[],
                         multi=True
-                    ),
-                    html.P("Sort by Emotion:", className="control_label"),   
-                    dcc.Dropdown(
-                        id="sort-emotion-dropdown",
-                        options= [{'label' : l, 'value' : l} for l in df['emotion'].unique()],
-                        value=None,
                     )
                 ]),
             ], className="left-col"),
@@ -88,6 +82,12 @@ def create_sentiment(filepath):
         html.Div([
             html.Div([
                 html.Div([
+                    html.P("Filter by Emotion:", className="control_label"),   
+                    dcc.Dropdown(
+                        id="sort-emotion-dropdown",
+                        options= [{'label' : l, 'value' : l} for l in df['emotion'].unique()],
+                        value=None,
+                    ),
                     html.P("Filter by Topic Label:", className="control_label"),
                     dcc.Dropdown(
                         id="topic-label-dropdown",
