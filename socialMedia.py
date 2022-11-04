@@ -42,7 +42,7 @@ def create_social(filename):
     trend_df_proportion.rename(
         columns={'value': 'proportion'}, inplace=True)
     trend_df_proportion.set_index('trunc_time', inplace=True)
-    trend_df_proportion['proportion_pct_change'] = (trend_df_proportion.groupby('label')['proportion']
+    trend_df_proportion['% Change in Proportion'] = (trend_df_proportion.groupby('label')['proportion']
                                                     .apply(pd.Series.pct_change))
     trend_df_proportion.set_index('label', append=True, inplace=True)
 
@@ -52,20 +52,18 @@ def create_social(filename):
     trend_df_count.drop(columns='variable', inplace=True)
     trend_df_count.rename(columns={'value': 'count'}, inplace=True)
     trend_df_count.set_index('trunc_time', inplace=True)
-    trend_df_count['count_change'] = trend_df_count.groupby('label')[
+    trend_df_count['Change in Count'] = trend_df_count.groupby('label')[
         'count'].diff()
-    trend_df_count['count_pct_change'] = (trend_df_count.groupby('label')['count']
-                                          .apply(pd.Series.pct_change))
     trend_df_count.set_index('label', append=True, inplace=True)
 
     # combined metrics (count & proportion) to determine trending topics
-    trend_df_merged = pd.concat(
-        [trend_df_count, trend_df_proportion], axis=1)
-    trending = trend_df_merged[(trend_df_merged['proportion_pct_change'] > 0) & (
-        trend_df_merged['count_change'] > 10)]
-    trending.reset_index(inplace=True)
-    trending_topics = trending[['trunc_time', 'label']]
-    trending_topics.rename(
+    trend_df_merged = pd.concat([trend_df_count, trend_df_proportion], axis=1)
+    trend_df_merged.reset_index(inplace=True)
+    default_prop_pct_change = 0
+    default_count_change = 10
+    trending = trend_df_merged[(trend_df_merged['% Change in Proportion'] > default_prop_pct_change) & (
+        trend_df_merged['Change in Count'] > default_count_change)]
+    trending.rename(
         columns={'trunc_time': 'Month', 'label': 'Trending Topic'}, inplace=True)
 
 
@@ -143,7 +141,7 @@ def create_social(filename):
                 daq.NumericInput(
                     id='count_change',
                     min=0,
-                    max=trend_df_merged['count_change'].max(),
+                    max=trend_df_merged['Change in Count'].max(),
                     value=10
                 ),
                 html.P("Metric 2: Percentage Increase in Proportion of Posts/Comments under that Topic from the previous month",
@@ -151,7 +149,7 @@ def create_social(filename):
                 daq.NumericInput(
                     id='prop_pct_change',
                     min=0,
-                    max=trend_df_merged['proportion_pct_change'].max()*100,
+                    max=trend_df_merged['% Change in Proportion'].max()*100,
                     value=0
                 ),
                 html.P(
@@ -164,9 +162,8 @@ def create_social(filename):
                         style={"textAlign": "center"}),
                 dash_table.DataTable(
                     id='trending_table',
-                    columns=[{"name": i, "id": i}
-                             for i in trending_topics.columns],
-                    data=trending_topics.to_dict('records'),
+                    columns= [{"name": "Month", "id": "Month"}, {"name": "Trending Topic", "id": "Trending Topic"}, {"name": "% Change in Proportion", "id": "% Change in Proportion"}, {"name": "Change in Count", "id": "Change in Count"}],
+                    data=trending.to_dict('records'),
                     style_cell=dict(textAlign='left', padding='5px'),
                     style_header={
                         'backgroundColor': 'white',
@@ -313,16 +310,14 @@ def create_social(filename):
         prop_pct_change = prop_pct_change/100
 
         # Filtering data based on the metrics selected
-        trending = trend_df_merged[(trend_df_merged['proportion_pct_change'] >= prop_pct_change) & (
-            trend_df_merged['count_change'] >= count_change)]
-
-        trending.reset_index(inplace=True)
-        trending_topics = trending[['trunc_time', 'label']]
-        trending_topics.rename(
+        trending = trend_df_merged[(trend_df_merged['% Change in Proportion'] >= prop_pct_change) & (
+        trend_df_merged['Change in Count'] >= count_change)]
+        trending.rename(
             columns={'trunc_time': 'Month', 'label': 'Trending Topic'}, inplace=True)
 
+
         # Filtering data based on date range selected
-        updated_trending_topics = trending_topics.loc[trending_topics['Month'].between(
+        updated_trending_topics = trending.loc[trending['Month'].between(
             pd.to_datetime(start_date), pd.to_datetime(end_date))]
 
         updated_trending_topics['Month'] = updated_trending_topics['Month'].apply(
